@@ -1,2 +1,3 @@
 # ping_driver
-Drivers to interface Blue Robotics's Ping Device with Ohio State's Underwater Robotics Team's software systems 
+
+This repository holds drivers to interface Ohio State's Underwater Robotics Team's Systems with the Blue Robotics Ping device.
