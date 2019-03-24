@@ -1,11 +1,10 @@
 # Establishes the minimum version of cmake needed to parse it in  
-# cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.3)
 project(ping_driver)
 
 # Finding other CMake / Catkin packages needed to build the current one 
 find_package(catkin REQUIRED
     COMPONENTS
-    roscpp 
     rospy 
     geometry_msgs
     message_generation 
@@ -14,10 +13,10 @@ find_package(catkin REQUIRED
 # Dunno what these do but they're in the other cmake and look important 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-
 # Establishes the messages used by the package 
 add_message_files (
     FILES
+    pingMsg.msg
 )
 
 generate_messages()
