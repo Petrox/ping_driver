@@ -5,7 +5,9 @@ project(ping_driver)
 # Finding other CMake / Catkin packages needed to build the current one 
 find_package(catkin REQUIRED
     COMPONENTS
+    roscpp
     rospy 
+    std_msgs
     geometry_msgs
     message_generation 
 )
@@ -16,7 +18,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 # Establishes the messages used by the package 
 add_message_files (
     FILES
-    pingMsg.msg
+    pingMessage.msg
 )
 
 generate_messages()
