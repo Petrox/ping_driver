@@ -20,6 +20,17 @@ If ROS is not recongizing the package If you end up needing to run "source devel
 
 Picture of the wiring setup: https://drive.google.com/open?id=1Q1uSh616rQzBKoS8JJXwo_EBXh4CzepP
 
+Also see https://www.bluerobotics.com/store/sensors-sonars-cameras/sonar/ping-sonar-r2-rp/, which (under the technical details tab) outlines which wires go where. The White and Green wires are actually switched due to some weird stuff.
+
+Technical Wiring Document: <I found this once, but I can't find it again. I know it exists though.>
+
+#### Which Wires Go Where?
+
+Black -> GND (Ground) 
+Red -> VIN (Voltage In) 
+Green -> TX 
+White -> RX 
+
 ## Usage
 
 "catkin_make" should be run in ping_ws in order to compile everything. 
@@ -31,6 +42,8 @@ Picture of the wiring setup: https://drive.google.com/open?id=1Q1uSh616rQzBKoS8J
 ## Debug / Common Issues
 
 If ROS is not recognizing ping_driver as a package when you try to use rosrun, you need to add the line "source ~/osu-uwrt/ping_ws/devel/setup.bash" to your .bashrc folder.  Your file path could be different, but shouldn't be. You can alternatively run "source devel/setup.bash" in each terminal you use when testing, but adding it to the .bashrc removes this need, as it does it automatically in each terminal you open. 
+
+If you are on Linux and you get a permissions error, you need to add your account to the dialout group. Google this for a guide, but you basically have to run a single command then restart your computer.
 
 If you get an error about failing to initialize the ping, or failing to find a device on that serial port, please check the serial port that you're plugging the ping into. If that doesn't work, you can change the port in the Ping1D constructor found in the code. 
 
