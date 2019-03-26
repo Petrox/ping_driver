@@ -31,10 +31,10 @@ if not myPing.set_speed_of_sound(SPEED_IN_AIR):
 # Initializes an instance of the message so its values can be populated
 ping_msg = pingMessage()
 
-print(myPing.get_speed_of_sound())
-
 # Loops at a frequency specified by the rate until ROS is shut down, refreshing and publishing the data 
-rate = rospy.Rate(50)
+# ? This seems to only change what it publishes every second instead of looping at a specified frequency - It packs them into a short interval and rests for the rest
+rate = rospy.Rate(100)
+
 while not rospy.is_shutdown():
 
     # Getting data using the library (get_distance_simple() returns a dict, which is basically python's equivalent of a JS object)
@@ -48,4 +48,6 @@ while not rospy.is_shutdown():
     # Sleep until the next measurement is taken 
     rate.sleep()
 
+# Might need this line to physically start it (will need to make above stuff into a function)
+# if __name__ == "__main__": main()
 
