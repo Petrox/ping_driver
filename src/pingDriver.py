@@ -30,14 +30,11 @@ if not myPing.set_speed_of_sound(SPEED_IN_AIR):
     print("Exiting program.")
     exit(1)
 
+# Todo - Consider adding error checking to these, because many of them return false if they didn't work right
 myPing.set_ping_interval(1)
 myPing.set_mode_auto(0)
 myPing.set_range(0, 10000)
 myPing.set_gain_index(5)
-
-print(myPing.get_profile()['scan_length'])
-print(myPing.get_profile()['scan_start'])
-print(myPing.get_gain_index()['gain_index'])
 
 # Debug Information
 rospy.loginfo("Device ID: " + str(myPing.get_device_id()['device_id']))
