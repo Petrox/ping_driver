@@ -1,34 +1,36 @@
 #!/usr/bin/env python
 
-# Issues: 
-# Have to run source devel/setup.bash at every terminal except for the roscore one for ROS to recognize the package 
-# Had to chmod the file itself to modify its permissions - Kinda wonky, make sure it's OK 
+# Imports
+from brping import Ping1D # Imports Blue Robotics's Python library for interfacing with the Ping 
+import rospy # Imports the Python version of ROS 
+from ping_driver.msg import pingMessage # Imports the custom message that we use 
 
-# Imports ping stuff
-from brping import Ping1D
-
-# Imports other stuff
-import rospy
-from ping_driver.msg import pingMessage
-
-# Setting up the ping and checking that it registered correctly
 # Serial Port & Baud (data transfer rate / sampling rate)
 myPing = Ping1D("/dev/ttyUSB0", 115200)
 
+# Checking to make sure that it was set up correctly
 if myPing.initialize() is False:
-    print("Failed to initialize Ping!")
+    print("Failed to initialize Ping! This probably means that it couldn't find the correct serial port or something similar.")
     exit(1)
 
-# Initializes the class with ROS and sets up a publisher
+# Initializes the class with ROS
 rospy.init_node('ping_viewer')
+
+# Sets up the publisher that will be used to publish the Ping's data 
 pub = rospy.Publisher('/ping/raw', pingMessage, queue_size=10)
 
-# Sets the rate at which ROS publishes to the topic 
+# Constants used in next step 
+SPEED_IN_WATER = 1498
+SPEED_IN_AIR = 346 
+
+# Setting speed of sound and making sure it was correctly set
+if not myPing.set_speed_of_sound(SPEED_IN_AIR):
+    print("Was not able to set the ping's speed of sound.")
+    print("Exiting program.")
+    exit(1)
+
+# Loops at a frequency specified by the rate until ROS is shut down
 rate = rospy.Rate(10)
-
-# pingMessage = {'distance': 0, 'confidence': 0}
-
-# Loops until ROS is shut down
 while not rospy.is_shutdown():
 
     # Getting data using the library (get_distance_simple() returns a dict, which is basically python's equivalent of a JS object)
