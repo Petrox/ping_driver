@@ -27,8 +27,11 @@ Technical Wiring Document: <I found this once, but I can't find it again. I know
 #### Which Wires Go Where?
 
 Black -> GND (Ground) 
+
 Red -> VIN (Voltage In) 
+
 Green -> TX 
+
 White -> RX 
 
 ## Usage
