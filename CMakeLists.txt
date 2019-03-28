@@ -9,8 +9,11 @@ find_package(catkin REQUIRED
     rospy 
     std_msgs
     geometry_msgs
-    message_generation 
+    message_generation
+    dynamic_reconfigure
 )
+
+generate_dynamic_reconfigure_options(cfg/PingDriver.cfg)
 
 # Dunno what these do but they're in the other cmake and look important 
 include_directories(include ${catkin_INCLUDE_DIRS})
