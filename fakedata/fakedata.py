@@ -4,6 +4,10 @@ import threading
 import random # Used for rng 
 import time # Used to sleep during publishing 
 
+# Configuration Constants (In meters unless otherwise stated)
+MIN_DISTANCE = 0
+MAX_DISTANCE = 30
+
 # Used by the thread that listens in on the terminal 
 def listenToTerminal(port):
 
@@ -36,18 +40,27 @@ def createTerminal():
     # Open a serial connection to the slave 
     ser = Serial(s_name, 2400, timeout=1)
 
-    # Making another thread so we can both publish and listen in on it at the same time
-    thread = threading.Thread(target=listener, args=[master])
-    thread.start()
+    # Making another thread so we can both publish and listen in on it at the same time (uncomment next two lines to listen in on the data)
+    # thread = threading.Thread(target=listenToTerminal, args=[master])
+    # thread.start()
 
     # Continuously publish data 
     while True:
 
-        ser.write("Random Number: " + str(random.randrange(5)) + "\r\n")
+        # Generates a float from MIN_DISTANCE to MAX_DISTANCE
+        # Todo - Check this equation - From brief checking, it seems to work, but I basically guessed at it 
+        distance = MIN_DISTANCE + random.random() * (MAX_DISTANCE - MIN_DISTANCE)
 
-        # Waits half a second before outputting the next message 
-        time.sleep(.5)
+        # This is always from 0 to 1 
+        # Todo - Make this gradually go up and down like the actual ping tends to do
+        confidence = random.random()
+
+        ser.write(str(distance) + "\r\n")
+        ser.write(str(confidence) + "\r\n")
+
+        # Publishes at approx. 10 Hz
+        time.sleep(.1)
 
 if __name__=='__main__':
-    listenToTerminal()
+    createTerminal()
 
