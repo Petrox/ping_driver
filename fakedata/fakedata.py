@@ -36,13 +36,14 @@ def createTerminal():
 
     # Get filename of slave 
     s_name = os.ttyname(slave) 
+    print("Port: " + str(s_name))
 
     # Open a serial connection to the slave 
     ser = Serial(s_name, 2400, timeout=1)
 
     # Making another thread so we can both publish and listen in on it at the same time (uncomment next two lines to listen in on the data)
-    # thread = threading.Thread(target=listenToTerminal, args=[master])
-    # thread.start()
+    thread = threading.Thread(target=listenToTerminal, args=[master])
+    thread.start()
 
     # Continuously publish data 
     while True:
