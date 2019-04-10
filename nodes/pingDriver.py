@@ -230,7 +230,7 @@ def setupFakeData():
             print("distanceData: " + str(distanceData))
 
             # Raw Data is in millimeters, data published to our topic should be in meters
-            ping_msg.distance = distanceData['distance'] / 1000.0 
+            ping_msg.distance = distanceData['distance']
             ping_msg.confidence = distanceData['confidence']
 
             pub.publish(ping_msg)
