@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# That's called a shebang ^ 
 
+# Todo - Add this block comment to README.md
 ''' 
 
 Intended Setup: 
@@ -17,7 +17,7 @@ The data published to /raw/ping is taken from the cached, global distance and co
 
 Otherwise, the Ping itself is set up. The data published to /raw/ping is taken from function calls to the bluerobotics-ping library. 
 
-Dynamic reconfigure is in a peculiar spot. It's not importing correctly.
+Dynamic reconfigure is in a peculiar spot.
 
 ''' 
 
@@ -58,7 +58,7 @@ currentCfg = {
 
 # Tracks whether we're reading from a fake stream or from the real ping 
 # Ideally, you can change only this value and the entire class's behavior will responsively change 
-readingFromFakeStream = True
+readingFromFakeStream = False
 
 # Used to communicate across threads
 cachedFakeDistance = 0
@@ -149,7 +149,7 @@ srv = Server(PingDriverConfig, reconfigure_cb)
 
 '''
 
-FUNCTION DEFINITIONS (FOR ORGANIZATION)
+    FUNCTION DEFINITIONS
 
 '''
 
@@ -292,7 +292,7 @@ def readFakeData(port):
             cachedFakeConfidence = float(res)
             currentlyReadingDistance = True
 
-# Everything before here is preliminary setup that has to be global variables
+# Runs what's necessary contingent upon if we're reading fake data or not 
 if __name__ == "__main__":
 
     if not readingFromFakeStream:        
