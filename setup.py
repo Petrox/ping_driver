@@ -1,4 +1,5 @@
-## ! DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD
+# DO NOT MANUALLY INVOKE THIS setup.py, USE CATKIN INSTEAD. 
+# IF YOU MANUALLY INVOKE, IT CAN BREAK YOUR ROS INSTALL
 
 from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup

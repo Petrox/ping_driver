@@ -40,6 +40,7 @@ currentCfg = {
 readingFromFakeStream = True
 
 # Used to communicate across threads
+# # This is NOT thread safe, but doesn't need to be 
 cachedFakeDistance = 0
 cachedFakeConfidence = 0
 
@@ -111,13 +112,10 @@ def reconfigure_cb(config, level):
 myPing = None # Avoids scope issues
 if not readingFromFakeStream:
 
-    myPing = Ping1D("", 115200)
+    # This specific serial port is usually correct but could theoretically need changed
+    myPing = Ping1D("/dev/ttyUSB0", 115200)
     if myPing.initialize() is False:
         rospy.logwarn("Failed to initialize Ping! This probably means that it couldn't find the correct serial port or something similar. Fatal error.")
-
-# Commonly used speed of sound values (in mm/s, which is what the ping uses)
-SPEED_IN_WATER = 1498000
-SPEED_IN_AIR = 346000
 
 # Setting up the node and the publisher for the Ping's data with ROS
 rospy.init_node('ping_viewer')
@@ -174,7 +172,7 @@ def setupFakeData():
     # Instance of the message so its values can be continually changed then published
     ping_msg = pingMessage()
     
-    # Makes references to these two variables point towards the global variables
+    # Makes references to these two variables in this function point towards the global variables
     global cachedFakeDistance
     global cachedFakeConfidence
 
@@ -213,7 +211,6 @@ def setupFakeData():
 
         # If distance data this time around is valid 
         if distanceData is not None:
-
 
             print("distanceData: " + str(distanceData))
 
