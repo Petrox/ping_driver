@@ -60,7 +60,7 @@ currentCfg = {
 
 # Tracks whether we're reading from a fake stream or from the real ping 
 # Ideally, you can change only this value and the entire class's behavior will responsively change 
-readingFromFakeStream = False
+readingFromFakeStream = True
 
 # Used to communicate across threads
 cachedFakeDistance = 0
