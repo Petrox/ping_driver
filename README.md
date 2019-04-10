@@ -65,6 +65,11 @@ The modules themselves are actually a part of this repository and are not .gitig
 Again, this file is already in the repo, but you need to set up a requirements.txt file first so Python knows which modules exactly it needs. This file should be created in the root of your repository, and should have the following contents: 
 
 ```
+System==0.1.14
+catkin_pkg==0.4.11
+logger==1.4
+repr==0.3.1
+unittest2==1.1.0
 bluerobotics-ping==0.0.7
 ```
 
