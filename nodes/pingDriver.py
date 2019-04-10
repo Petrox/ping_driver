@@ -56,6 +56,8 @@ currentCfg = {
     "scan_length": 10
 }
 
+# pip install -r requirements.txt --system -t packages/
+
 # Tracks whether we're reading from a fake stream or from the real ping 
 # Ideally, you can change only this value and the entire class's behavior will responsively change 
 readingFromFakeStream = False
