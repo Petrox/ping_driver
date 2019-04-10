@@ -18,7 +18,7 @@ catkin_python_setup()
 
 generate_messages()
 
-# Necessary for dynamic reconfig 
+# Needs called before catkin_package 
 generate_dynamic_reconfigure_options(cfg/PingDriverConfig.cfg)
 
 # Must be run before catkin_install_python as it defines CATKIN_PACKAGE_BIN_DESTINATION

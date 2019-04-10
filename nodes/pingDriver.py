@@ -1,4 +1,25 @@
 #!/usr/bin/env python
+# That's called a shebang ^ 
+
+''' 
+
+Intended Setup: 
+
+The class has two separate states - Reading from the Ping itself, and reading from a simulated data feed. 
+here's a single variable, readingFromFakeStream, that dictates that through the entire class. 
+
+Upon file initialization, the file goes through setup procedures, detailed below:
+
+If readingFromFakeStream is true, it sets up 
+both a thread that generates those values and a thread that will continuously read those values and update a set of 
+global, "cached" variables. They need to be global because that's how you make two different threads interact in this capacity. 
+The data published to /raw/ping is taken from the cached, global distance and confidence values continuously updated by the thread.
+
+Otherwise, the Ping itself is set up. The data published to /raw/ping is taken from function calls to the bluerobotics-ping library. 
+
+Dynamic reconfigure is in a peculiar spot. It's not importing correctly.
+
+''' 
 
 # Adding certain modules to PYTHONPATH so that they can be correctly imported directly afterward
 import sys, os
@@ -17,13 +38,14 @@ from dynamic_reconfigure.server import Server # Required import for dynamic reco
 from ping_driver.cfg import PingDriverConfig
 
 # Simulated Data Imports
-import threading 
-import random 
-import time 
+import threading # Allows us to generate and listen for fake data natively in this class on different threads
+import random # Allows us to generate values for fake data 
+import time # Allows us to dictate interval between fake data publishing 
+import pty # Allows us to set up a terminal that serves as a fake Ping, basically
+from serial import Serial # Allows us to simulate fake data on a specific serial port
 
-# Initializing new instance of config
 # I'd normally do this using currentCfg = PingDriverConfig() but python's yelling at me that it can't use a module like that
-# So, this implements basically the same thing - A cache of the current value so we can tell if dynamic reconfigure needs to change what's currently here 
+# So, this implements basically the same thing - A cache of the current value so dynamic reconfigure can tell if it needs to change something 
 currentCfg = {
     "ping_enabled": False,
     "ping_frequency": 10, 
@@ -37,7 +59,10 @@ currentCfg = {
 # Tracks whether we're reading from a fake stream or from the real ping 
 # Ideally, you can change only this value and the entire class's behavior will responsively change 
 readingFromFakeStream = True
-cachedFakeDistance = 0, cachedFakeConfidence = 0
+
+# Used to communicate across threads
+cachedFakeDistance = 0
+cachedFakeConfidence = 0
 
 # Setting default config parameters 
 currentCfg['auto'] = True
@@ -52,7 +77,7 @@ def reconfigure_cb(config, level):
 
     # Setting Ping Enabled State 
     if (currentCfg['ping_enabled'] != config.ping_enabled):
-        if not myPing.set_ping_enable(config.ping_enabled):            
+        if not myPing.set_ping_enable(config.ping_enabled) and not readingFromFakeStream:            
             print("Failed to set Ping Enable. Exiting...")
             exit(-1)
         currentCfg['ping_enabled'] = config.ping_enabled
@@ -62,13 +87,13 @@ def reconfigure_cb(config, level):
     # Note - If this is set to a really low value, the Ping will just poll as fast as it can computationally support, which in our case was 14Hz or so
     if (currentCfg['ping_frequency'] != config.ping_frequency):
         interval = 1000.0 / config.ping_frequency # Convert to ms interval
-        if not myPing.set_ping_interval(interval):
+        if not myPing.set_ping_interval(interval) and not readingFromFakeStream:
             print("Failed to set Ping Interval. Exiting...")
             exit(-1)
         currentCfg['ping_frequency'] = config.ping_frequency
 
     # Setting the speed of sound that the ping is currently using 
-    if (currentCfg['speed_of_sound'] != config.speed_of_sound):
+    if (currentCfg['speed_of_sound'] != config.speed_of_sound) and not readingFromFakeStream:
         sos = config.speed_of_sound * 1000 # Convert to mm/s
         if not myPing.set_speed_of_sound(sos):
             print("Failed to set Speed of Sound. Exiting...")
@@ -77,7 +102,7 @@ def reconfigure_cb(config, level):
 
     # Setting which gain setting is being used (manual or auto) 
     if (currentCfg['auto'] != config.auto):
-        if not myPing.set_mode_auto(1 if config.auto else 0):
+        if not myPing.set_mode_auto(1 if config.auto else 0) and not readingFromFakeStream:
             print("Failed to set Mode. Exiting...")
             exit(-1)
         currentCfg['auto'] = config.auto
@@ -87,19 +112,20 @@ def reconfigure_cb(config, level):
 
         # Setting scan start range (where the Ping will start detecting objects - Is zero by default iirc)
         if (currentCfg['scan_start'] != config.scan_start or currentCfg.scan_length != config.scan_length):
-            if not myPing.set_range(config.scan_start, config.scan_length):
+            if not myPing.set_range(config.scan_start, config.scan_length) and not readingFromFakeStream:
                 print("Failed to set Scan Range. Exiting...")
                 exit(-1)
             currentCfg['ping_enabled'] = config.ping_enabled
 
         # Setting the gain used - Affects the accuracy and processing method of the ping, but we don't fully understand it as of yet 
         if (currentCfg['gain'] != config.gain):
-            if not myPing.set_gain_index(config.gain):
+            if not myPing.set_gain_index(config.gain) and not readingFromFakeStream:
                 print("Failed to set Gain Index. Exiting...")
                 exit(-1)
             currentCfg['gain'] = config.gain
         
     # Everything's been processed from dynamic reconfig, so we're good to return this 
+    # Todo - Make sure this doesn't cause errors due to me running off of a custom dictionary here instead of using a variable instantiated directly from the config file 
     return currentCfg
 
 # Initializing Ping if we're not working with fake data 
@@ -121,17 +147,16 @@ pub = rospy.Publisher('/ping/raw', pingMessage, queue_size=10)
 # Ping is connected and readable, so we start the dynamic reconfig server 
 srv = Server(PingDriverConfig, reconfigure_cb)
 
-# Everything before here is preliminary setup that has to be global variables
-if __name__ == "__main__":
+'''
 
-    initializePingDefaultValues()
-    outputStartupPingValues()
-    continuouslyReadData()
+FUNCTION DEFINITIONS (FOR ORGANIZATION)
+
+'''
 
 def initializePingDefaultValues():
 
     if not myPing.set_speed_of_sound(SPEED_IN_AIR):
-    rospy.logwarn("Was not able to set the ping's speed of sound.")
+        rospy.logwarn("Was not able to set the ping's speed of sound.")
 
     if not myPing.set_ping_interval(1):
         rospy.logwarn("Was not able to set the ping's sampling interval.")
@@ -156,10 +181,14 @@ def outputStartupPingValues():
     rospy.loginfo("Gain Index: " + str(myPing.get_general_info()['gain_index']))
     rospy.loginfo("Operating Mode (0 = Manual, 1 = Auto): " + str(myPing.get_general_info()['mode_auto']))
 
-def continuouslyReadData():
+def setupFakeData():
 
     # Instance of the message so its values can be continually changed then published
     ping_msg = pingMessage()
+    
+    # Makes references to these two variables point towards the global variables
+    global cachedFakeDistance
+    global cachedFakeConfidence
 
     # Todo - Make both the server and listener only happen if the bool is set to the correct value (I would do this, but I'm having issues getting the variable scope right)
     # Sets up a server that's basically publishing fake data just incase we need it
@@ -175,6 +204,7 @@ def continuouslyReadData():
         listenerThread = threading.Thread(target=readFakeData, args=[master])
         listenerThread.start()
 
+    distanceData = None
     while not rospy.is_shutdown():
 
         # If we're reading from the ping, get data from the actual library function 
@@ -186,12 +216,18 @@ def continuouslyReadData():
         else: 
 
             distanceData = {
-                "distance": cachedFakeDistance * 1000, 
-                "confidence": cachedFakeConfidence * 1000
+                "distance": None, 
+                "confidence": None
             }
+
+            distanceData['distance'] = cachedFakeDistance / 1000
+            distanceData['confidence'] = cachedFakeConfidence 
 
         # If distance data this time around is valid 
         if distanceData is not None:
+
+
+            print("distanceData: " + str(distanceData))
 
             # Raw Data is in millimeters, data published to our topic should be in meters
             ping_msg.distance = distanceData['distance'] / 1000.0 
@@ -204,17 +240,25 @@ def continuouslyReadData():
 
             print("get_distance_simple() returned an invalid value. Skipping iteration.")
 
+        rospy.sleep(.1)
+
 def publishFakeData(serialPort):
+
+    # Makes references to these two variables point towards the global variables
+    global cachedFakeDistance
+    global cachedFakeConfidence
 
     while True:
 
-        # Refreshing what values should be published based on dynamic reconfig values every cycle
+        # Refreshing distance ranged every cycle incase reconfig changed them 
         MIN_DISTANCE = currentCfg['scan_start'] * 1000
         MAX_DISTANCE = currentCfg['scan_length'] * 1000
 
+        # Calculating values
         distance = MIN_DISTANCE + random.random() * (MAX_DISTANCE - MIN_DISTANCE)
         confidence = random.random()
 
+        # Writing values to serial port 
         serialPort.write(str(distance) + "\r\n")
         serialPort.write(str(confidence) + "\r\n")
 
@@ -222,6 +266,10 @@ def publishFakeData(serialPort):
 
 # Updates a global variable cache with the most up-to-date fake data value for distance and confidence
 def readFakeData(port):
+
+    # Makes references to these two variables point towards the global variables
+    global cachedFakeDistance
+    global cachedFakeConfidence
 
     # Used to alternate which cached value is being read with this line
     currentlyReadingDistance = True
@@ -233,7 +281,7 @@ def readFakeData(port):
         while not res.endswith(b"\r\n"):
 
             res += os.read(port, 1)
-        
+
         if currentlyReadingDistance:
 
             cachedFakeDistance = float(res)
@@ -243,6 +291,18 @@ def readFakeData(port):
 
             cachedFakeConfidence = float(res)
             currentlyReadingDistance = True
+
+# Everything before here is preliminary setup that has to be global variables
+if __name__ == "__main__":
+
+    if not readingFromFakeStream:        
+
+        initializePingDefaultValues()
+        outputStartupPingValues()
+
+    else:
+
+        setupFakeData()
 
         
 
