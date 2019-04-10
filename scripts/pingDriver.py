@@ -1,26 +1,5 @@
 #!/usr/bin/env python
 
-# Todo - Add this block comment to README.md
-''' 
-
-Intended Setup: 
-
-The class has two separate states - Reading from the Ping itself, and reading from a simulated data feed. 
-here's a single variable, readingFromFakeStream, that dictates that through the entire class. 
-
-Upon file initialization, the file goes through setup procedures, detailed below:
-
-If readingFromFakeStream is true, it sets up 
-both a thread that generates those values and a thread that will continuously read those values and update a set of 
-global, "cached" variables. They need to be global because that's how you make two different threads interact in this capacity. 
-The data published to /raw/ping is taken from the cached, global distance and confidence values continuously updated by the thread.
-
-Otherwise, the Ping itself is set up. The data published to /raw/ping is taken from function calls to the bluerobotics-ping library. 
-
-Dynamic reconfigure is in a peculiar spot.
-
-''' 
-
 # Adding certain modules to PYTHONPATH so that they can be correctly imported directly afterward
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
