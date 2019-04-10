@@ -35,8 +35,6 @@ currentCfg = {
     "scan_length": 10
 }
 
-# pip install -r requirements.txt --system -t packages/
-
 # Tracks whether we're reading from a fake stream or from the real ping 
 # Ideally, you can change only this value and the entire class's behavior will responsively change 
 readingFromFakeStream = True
@@ -133,22 +131,31 @@ srv = Server(PingDriverConfig, reconfigure_cb)
     FUNCTION DEFINITIONS
 
 '''
+currentCfg = {
+    "ping_enabled": False,
+    "ping_frequency": 10, 
+    "speed_of_sound": 1498, 
+    "auto": True,
+    "gain": 0,
+    "scan_start": 0,
+    "scan_length": 10
+}
 
 def initializePingDefaultValues():
 
-    if not myPing.set_speed_of_sound(SPEED_IN_AIR):
+    if not myPing.set_speed_of_sound(currentCfg['speed_of_sound']):
         rospy.logwarn("Was not able to set the ping's speed of sound.")
 
-    if not myPing.set_ping_interval(1):
+    if not myPing.set_ping_interval(currentCfg['ping_interval']):
         rospy.logwarn("Was not able to set the ping's sampling interval.")
 
-    if not myPing.set_mode_auto(0):
+    if not myPing.set_mode_auto(currentCfg['scan_start'] * 1000, currentCfg['scan_length'] * 1000):
         rospy.logwarn("Was not able to set the Ping's sampling mode.")
 
-    if not myPing.set_range(0, 10000):
+    if not myPing.set_range(currentCfg['scan_start'] * 1000]):
         rospy.logwarn("Was not able to set the Ping's range.")
 
-    if not myPing.set_gain_index(5):
+    if not myPing.set_gain_index(currentCfg['gain']):
         rospy.logwarn("Was not able to set the Ping's gain index.")
 
 def outputStartupPingValues():
