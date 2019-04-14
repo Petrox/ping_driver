@@ -28,6 +28,7 @@ from serial import Serial # Allows us to simulate fake data on a specific serial
 
 # Tracks whether we're reading from a fake stream or from the real ping 
 # Ideally, you can change only this value and the entire class's behavior will responsively change 
+# TODO: Make this a launch file 
 readingFromFakeStream = False
 
 # Used to communicate across threads
@@ -35,7 +36,7 @@ readingFromFakeStream = False
 cachedFakeDistance = 0
 cachedFakeConfidence = 0
 
-#TODO: Load default values from a config file or something
+#TODO: Figure out how to load default values from a config or launch file 
 currentCfg = dict()
 currentCfg['ping_enabled'] = False
 currentCfg['ping_frequency'] = 10
@@ -119,14 +120,6 @@ pub = rospy.Publisher('/ping/raw', pingMessage, queue_size=10)
 # Ping is connected and readable, so we start the dynamic reconfig server 
 srv = Server(PingDriverConfig, reconfigure_cb)
 
-currentCfg['ping_enabled'] = False
-currentCfg['ping_frequency'] = 10
-currentCfg['speed_of_sound'] = 1498
-currentCfg['auto'] = True
-currentCfg['scan_start'] = 0
-currentCfg['scan_length'] = 10
-currentCfg['gain'] = 0
-
 def initializePingDefaultValues():
 
     if not myPing.set_ping_enabled(1):
@@ -179,6 +172,7 @@ def outputStartupPingValues():
     rospy.loginfo("Gain Index: " + str(myPing.get_general_info()['gain_index']))
     rospy.loginfo("Operating Mode (0 = Manual, 1 = Auto): " + str(myPing.get_general_info()['mode_auto']))
 
+# TODO: Modify this function to get called regardless of overall operation mode (fake or real data) because that's much cleaner to look at and there's some redundant checks in here 
 def setupFakeData():
 
     # Instance of the message so its values can be continually changed then published
@@ -188,7 +182,6 @@ def setupFakeData():
     global cachedFakeDistance
     global cachedFakeConfidence
 
-    # Todo - Make both the server and listener only happen if the bool is set to the correct value (I would do this, but I'm having issues getting the variable scope right)
     # Sets up a server that's basically publishing fake data just incase we need it
     if readingFromFakeStream:
 
