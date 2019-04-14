@@ -24,7 +24,7 @@ import pty # Allows us to set up a terminal that serves as a fake Ping, basicall
 from serial import Serial # Allows us to simulate fake data on a specific serial port
 
 # Loading in parameters
-readingFromFakeStream = rospy.get_param("ping_driver/shouldEmulateData")
+shouldEmulateData = rospy.get_param("ping_driver/shouldEmulateData")
 currentCfg = dict()
 currentCfg['ping_enabled'] = rospy.get_param("ping_driver/ping_enabled")
 currentCfg['ping_frequency'] = rospy.get_param("ping_driver/ping_frequency")
@@ -47,7 +47,7 @@ def reconfigure_cb(config, level):
 
     # Setting Ping Enabled State 
     if (currentCfg['ping_enabled'] != config.ping_enabled):
-        if not myPing.set_ping_enable(config.ping_enabled) and not readingFromFakeStream:            
+        if not myPing.set_ping_enable(config.ping_enabled) and not shouldEmulateData:            
             print("Failed to set Ping Enable. Exiting...")
             exit(-1)
         currentCfg['ping_enabled'] = config.ping_enabled
@@ -57,13 +57,13 @@ def reconfigure_cb(config, level):
     # Note - If this is set to a really low value, the Ping will just poll as fast as it can computationally support, which in our case was 14Hz or so
     if (currentCfg['ping_frequency'] != config.ping_frequency):
         interval = 1000.0 / config.ping_frequency # Convert to ms interval
-        if not myPing.set_ping_interval(interval) and not readingFromFakeStream:
+        if not myPing.set_ping_interval(interval) and not shouldEmulateData:
             print("Failed to set Ping Interval. Exiting...")
             exit(-1)
         currentCfg['ping_frequency'] = config.ping_frequency
 
     # Setting the speed of sound that the ping is currently using 
-    if (currentCfg['speed_of_sound'] != config.speed_of_sound) and not readingFromFakeStream:
+    if (currentCfg['speed_of_sound'] != config.speed_of_sound) and not shouldEmulateData:
         sos = config.speed_of_sound * 1000 # Convert to mm/s
         if not myPing.set_speed_of_sound(sos):
             print("Failed to set Speed of Sound. Exiting...")
@@ -72,7 +72,7 @@ def reconfigure_cb(config, level):
 
     # Setting which gain setting is being used (manual or auto) 
     if (currentCfg['auto'] != config.auto):
-        if not myPing.set_mode_auto(1 if config.auto else 0) and not readingFromFakeStream:
+        if not myPing.set_mode_auto(1 if config.auto else 0) and not shouldEmulateData:
             print("Failed to set Mode. Exiting...")
             exit(-1)
         currentCfg['auto'] = config.auto
@@ -82,14 +82,14 @@ def reconfigure_cb(config, level):
 
         # Setting scan start range (where the Ping will start detecting objects - Is zero by default iirc)
         if (currentCfg['scan_start'] != config.scan_start or currentCfg.scan_length != config.scan_length):
-            if not myPing.set_range(config.scan_start, config.scan_length) and not readingFromFakeStream:
+            if not myPing.set_range(config.scan_start, config.scan_length) and not shouldEmulateData:
                 print("Failed to set Scan Range. Exiting...")
                 exit(-1)
             currentCfg['ping_enabled'] = config.ping_enabled
 
         # Setting the gain used - Affects the accuracy and processing method of the ping, but we don't fully understand it as of yet 
         if (currentCfg['gain'] != config.gain):
-            if not myPing.set_gain_index(config.gain) and not readingFromFakeStream:
+            if not myPing.set_gain_index(config.gain) and not shouldEmulateData:
                 print("Failed to set Gain Index. Exiting...")
                 exit(-1)
             currentCfg['gain'] = config.gain
@@ -107,7 +107,7 @@ srv = Server(PingDriverConfig, reconfigure_cb)
 
 # Initializing Ping and error-checking 
 myPing = None # Delcared here to retain global scope 
-if not readingFromFakeStream:
+if not shouldEmulateData:
 
     myPing = Ping1D(port, 115200)
     if not myPing.initialize():
@@ -134,7 +134,7 @@ def publishData():
     global cachedFakeConfidence
 
     # Sets up a server that's basically publishing fake data just incase we need it
-    if readingFromFakeStream:
+    if shouldEmulateData:
 
         master, slave = pty.openpty()
         s_name = os.ttyname(slave)
@@ -150,7 +150,7 @@ def publishData():
     while not rospy.is_shutdown():
 
         # If we're reading from the ping, get data from the actual library function 
-        if readingFromFakeStream:
+        if shouldEmulateData:
 
             distanceData['distance'] = cachedFakeDistance / 1000
             distanceData['confidence'] = cachedFakeConfidence            
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     # Called regardless of if we're using ping or simulated data 
     publishData()
 
-    if not readingFromFakeStream:
+    if not shouldEmulateData:
 
         outputStartupPingValues()
 

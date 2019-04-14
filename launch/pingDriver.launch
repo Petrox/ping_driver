@@ -6,7 +6,7 @@
     <!-- Ping startup values -->
     <arg name="ping_enabled" default="True" />
     <arg name="ping_frequency" default="10" />
-    <arg name="speed_of_sound" default="346" />
+    <arg name="speed_of_sound" default="346" /> <!-- Speed of sound in air -->
     <arg name="auto" default="True" />
     <arg name="scan_start" default="0" />
     <arg name="scan_length" default="10" />
