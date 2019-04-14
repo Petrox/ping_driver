@@ -147,10 +147,10 @@ def initializePingDefaultValues():
     if not myPing.set_ping_interval(currentCfg['ping_interval']):
         rospy.logwarn("Was not able to set the ping's sampling interval.")
 
-    if not myPing.set_mode_auto(currentCfg['scan_start'] * 1000, currentCfg['scan_length'] * 1000):
+    if not myPing.set_mode_auto(True):
         rospy.logwarn("Was not able to set the Ping's sampling mode.")
 
-    if not myPing.set_range(currentCfg['scan_start'] * 1000]):
+    if not myPing.set_range( currentCfg['scan_start'] * 1000, currentCfg[scan_length] * 1000):
         rospy.logwarn("Was not able to set the Ping's range.")
 
     if not myPing.set_gain_index(currentCfg['gain']):
@@ -280,14 +280,16 @@ def readFakeData(port):
 # Runs what's necessary contingent upon if we're reading fake data or not 
 if __name__ == "__main__":
 
-    if not readingFromFakeStream:        
+    if readingFromFakeStream:        
+
+        setupFakeData()        
+
+    else:
 
         initializePingDefaultValues()
         outputStartupPingValues()
 
-    else:
-
-        setupFakeData()
+        
 
         
 
