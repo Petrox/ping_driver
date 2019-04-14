@@ -1,12 +1,14 @@
 # ping_driver
 
+There is a list of common problems that you may run into located at the bottom of the readme.
+
 This repository holds the driver to interface Ohio State's Underwater Robotics Team's Systems with the Blue Robotics Ping device.
 
 In short, this connects to the Ping and outputs the Ping's "distance" and "confidence" measurements to the topic "/ping/raw". If anything other than distance and confidence is needed, the code is heavily documented and organized. It shouldn't be a difficult addition. 
 
 The driver also optionally supports fake data simulation via Python's pseudoterminal functionality in order to test the driver without having access to the Ping itself. To enable this, change the "readingFromFakeStream" boolean variable to True. The class should automatically readjust, though this function wasn't extensively tested.
 
-## Hardware Setup 
+## Hardware Setup
 
 ### Wiring Setup
 
