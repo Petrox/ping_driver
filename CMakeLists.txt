@@ -29,10 +29,6 @@ catkin_install_python(programs scripts/pingDriver.py
 
 # add_dependencies(ping_driver ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-install(TARGETS ${PROJECT_NAME}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
