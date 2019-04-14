@@ -28,7 +28,7 @@ from serial import Serial # Allows us to simulate fake data on a specific serial
 
 # Tracks whether we're reading from a fake stream or from the real ping 
 # Ideally, you can change only this value and the entire class's behavior will responsively change 
-readingFromFakeStream = True
+readingFromFakeStream = False
 
 # Used to communicate across threads
 # # This is NOT thread safe, but doesn't need to be 
@@ -118,21 +118,6 @@ pub = rospy.Publisher('/ping/raw', pingMessage, queue_size=10)
 
 # Ping is connected and readable, so we start the dynamic reconfig server 
 srv = Server(PingDriverConfig, reconfigure_cb)
-
-'''
-
-    FUNCTION DEFINITIONS
-
-'''
-currentCfg = {
-    "ping_enabled": False,
-    "ping_frequency": 10, 
-    "speed_of_sound": 1498, 
-    "auto": True,
-    "gain": 0,
-    "scan_start": 0,
-    "scan_length": 10
-}
 
 def initializePingDefaultValues():
 
