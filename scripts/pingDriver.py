@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-# To Install Dependencies: 
-# pip install -r /path/to/requirements.txt -f /path/to/containing/folder
-
 # Adding certain modules to PYTHONPATH so that they can be correctly imported directly afterward
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,8 +25,7 @@ from serial import Serial # Allows us to simulate fake data on a specific serial
 
 # Tracks whether we're reading from a fake stream or from the real ping 
 # Ideally, you can change only this value and the entire class's behavior will responsively change 
-# TODO: Make this a launch file 
-readingFromFakeStream = False
+readingFromFakeStream = rospy.get_param("ping_driver/shouldEmulateData")
 
 # Used to communicate across threads
 # # This is NOT thread safe, but doesn't need to be 

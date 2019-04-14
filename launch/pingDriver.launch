@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="ping_driver" name="ping_driver" type="pingDriver.py">
+        <param name="shouldEmulateData" value="True" />
+    </node>
+</launch>
