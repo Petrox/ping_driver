@@ -1,0 +1,37 @@
+<launch>
+    
+    <!-- Holds which port the robot is on -->
+    <arg name="dev" default="/dev/ping" />
+
+    <!-- Ping startup values -->
+    <arg name="ping_enabled" default="True" />
+    <arg name="ping_frequency" default="10" />
+    <arg name="speed_of_sound" default="346" />
+    <arg name="auto" default="True" />
+    <arg name="scan_start" default="0" />
+    <arg name="scan_length" default="10" />
+    <arg name="gain" default="0" />
+
+    <!-- Controls whether the class gets data from the ping or emulates it -->
+    <arg name="shouldEmulateData" default="False" />
+
+    <node pkg="ping_driver" name="ping_driver" type="pingDriver.py">
+
+        <!-- Controls whether node reads from ping itself or from a fake data stream -->
+        <param name="shouldEmulateData" value="$(arg shouldEmulateData)" />
+
+        <!-- Ping Startup Parameters -->
+        <param name="ping_enabled" value="$(arg ping_enabled)" />
+        <param name="ping_frequency" value="$(arg ping_frequency)" />
+        <param name="speed_of_sound" value="$(arg speed_of_sound)" />
+        <param name="auto" value="$(arg auto)" />
+        <param name="scan_start" value="$(arg scan_start)" />
+        <param name="scan_length" value="$(arg scan_length)" />
+        <param name="gain" value="$(arg gain)" />
+
+        <!-- Port used in Ping initialization -->
+        <param name="dev" type="string" value="$(arg dev)" />
+
+    </node>
+
+</launch>
