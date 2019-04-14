@@ -11,7 +11,7 @@ find_package(catkin REQUIRED
 )
 
 # Links the messages used by the node 
-add_message_files (FILES pingMessage.msg)
+add_message_files(DIRECTORY msg)
 
 # Sets up project imports using information from setup.py
 catkin_python_setup()
