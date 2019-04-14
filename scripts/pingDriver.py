@@ -119,22 +119,54 @@ pub = rospy.Publisher('/ping/raw', pingMessage, queue_size=10)
 # Ping is connected and readable, so we start the dynamic reconfig server 
 srv = Server(PingDriverConfig, reconfigure_cb)
 
+currentCfg['ping_enabled'] = False
+currentCfg['ping_frequency'] = 10
+currentCfg['speed_of_sound'] = 1498
+currentCfg['auto'] = True
+currentCfg['scan_start'] = 0
+currentCfg['scan_length'] = 10
+currentCfg['gain'] = 0
+
 def initializePingDefaultValues():
+
+    if not myPing.set_ping_enabled(1):
+        rospy.logwarn("Was not able to enable ping.")
+    else: 
+        rospy.loginfo("Enabled ping successfully.")
+        
+    if not myPing.set_ping_interval(currentCfg['ping_interval']):
+        rospy.logwarn("Was not able to set the ping's sampling interval.")
+    else: 
+        rospy.loginfo("Set the ping's sampling interval successfully.")
 
     if not myPing.set_speed_of_sound(currentCfg['speed_of_sound']):
         rospy.logwarn("Was not able to set the ping's speed of sound.")
-
-    if not myPing.set_ping_interval(currentCfg['ping_interval']):
-        rospy.logwarn("Was not able to set the ping's sampling interval.")
+    else: 
+        rospy.loginfo("Set the ping's speed of sound successfully.")
 
     if not myPing.set_mode_auto(True):
         rospy.logwarn("Was not able to set the Ping's sampling mode.")
+    else:
+        rospy.loginfo("Set the ping's sampling mode successfully.")
 
-    if not myPing.set_range( currentCfg['scan_start'] * 1000, currentCfg[scan_length] * 1000):
-        rospy.logwarn("Was not able to set the Ping's range.")
+    # Only try to set the below attributes if we're not on auto mode
+    if (currentCfg['auto'] == 0):
 
-    if not myPing.set_gain_index(currentCfg['gain']):
-        rospy.logwarn("Was not able to set the Ping's gain index.")
+        rospy.loginfo("Ping's mode was manual. Attempting to set range and gain index.")
+        
+        if not myPing.set_range( currentCfg['scan_start'] * 1000, currentCfg[scan_length] * 1000):
+            rospy.logwarn("Was not able to set the Ping's range.")
+        else:
+            rospy.loginfo("Set the ping's range successfully.")
+
+        if not myPing.set_gain_index(currentCfg['gain']):
+            rospy.logwarn("Was not able to set the Ping's gain index.")
+        else:
+            rospy.loginfo("Set the ping's gain index successfully.")
+
+    else: 
+
+        rospy.loginfo("DIdn't set ping range or gain index due to mode being in auto.")
 
 def outputStartupPingValues():
 
