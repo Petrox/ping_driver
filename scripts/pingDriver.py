@@ -23,24 +23,22 @@ import time # Allows us to dictate interval between fake data publishing
 import pty # Allows us to set up a terminal that serves as a fake Ping, basically
 from serial import Serial # Allows us to simulate fake data on a specific serial port
 
-# Tracks whether we're reading from a fake stream or from the real ping 
-# Ideally, you can change only this value and the entire class's behavior will responsively change 
+# Loading in parameters
 readingFromFakeStream = rospy.get_param("ping_driver/shouldEmulateData")
+
+currentCfg = dict()
+currentCfg['ping_enabled'] = rospy.get_param("ping_driver/ping_enabled")
+currentCfg['ping_frequency'] = rospy.get_param("ping_driver/ping_frequency")
+currentCfg['speed_of_sound'] = rospy.get_param("ping_driver/speed_of_sound")
+currentCfg['auto'] = rospy.get_param("ping_driver/auto")
+currentCfg['scan_start'] = rospy.get_param("ping_driver/scan_start")
+currentCfg['scan_length'] = rospy.get_param("ping_driver/scan_length")
+currentCfg['gain'] = rospy.get_param("ping_driver/gain")
 
 # Used to communicate across threads
 # # This is NOT thread safe, but doesn't need to be 
 cachedFakeDistance = 0
 cachedFakeConfidence = 0
-
-#TODO: Figure out how to load default values from a config or launch file 
-currentCfg = dict()
-currentCfg['ping_enabled'] = False
-currentCfg['ping_frequency'] = 10
-currentCfg['speed_of_sound'] = 1498
-currentCfg['auto'] = True
-currentCfg['scan_start'] = 0
-currentCfg['scan_length'] = 10
-currentCfg['gain'] = 0
 
 # Callback for Dynamic Reconfigure
 # Called whenever a value is changed in the dynamic reconfigure GUI - Basically just updates all of the Ping's inherent properties to whatever they are through Dynamic Reconfigure 
