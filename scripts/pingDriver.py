@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# To Install Dependencies: 
+# pip install -r /path/to/requirements.txt -f /path/to/containing/folder
+
 # Adding certain modules to PYTHONPATH so that they can be correctly imported directly afterward
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -8,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/msg")
 
 # Imports
-from brping import Ping1D # Imports Blue Robotics's Python library for interfacing with the Ping 
+from brping import Ping1D # Imports Blue Robotics's Python librarqy for interfacing with the Ping 
 import rospy # Python version of ROS 
 from ping_driver.msg import pingMessage # Imports the custom message that we use
 
@@ -23,18 +26,6 @@ import time # Allows us to dictate interval between fake data publishing
 import pty # Allows us to set up a terminal that serves as a fake Ping, basically
 from serial import Serial # Allows us to simulate fake data on a specific serial port
 
-# I'd normally do this using currentCfg = PingDriverConfig() but python's yelling at me that it can't use a module like that
-# So, this implements basically the same thing - A cache of the current value so dynamic reconfigure can tell if it needs to change something 
-currentCfg = {
-    "ping_enabled": False,
-    "ping_frequency": 10, 
-    "speed_of_sound": 1498, 
-    "auto": True,
-    "gain": 0,
-    "scan_start": 0,
-    "scan_length": 10
-}
-
 # Tracks whether we're reading from a fake stream or from the real ping 
 # Ideally, you can change only this value and the entire class's behavior will responsively change 
 readingFromFakeStream = True
@@ -44,7 +35,11 @@ readingFromFakeStream = True
 cachedFakeDistance = 0
 cachedFakeConfidence = 0
 
-# Setting default config parameters 
+#TODO: Load default values from a config file or something
+currentCfg = dict()
+currentCfg['ping_enabled'] = False
+currentCfg['ping_frequency'] = 10
+currentCfg['speed_of_sound'] = 1498
 currentCfg['auto'] = True
 currentCfg['scan_start'] = 0
 currentCfg['scan_length'] = 10
@@ -211,8 +206,6 @@ def setupFakeData():
 
         # If distance data this time around is valid 
         if distanceData is not None:
-
-            print("distanceData: " + str(distanceData))
 
             # Raw Data is in millimeters, data published to our topic should be in meters
             ping_msg.distance = distanceData['distance']
