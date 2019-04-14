@@ -25,7 +25,6 @@ from serial import Serial # Allows us to simulate fake data on a specific serial
 
 # Loading in parameters
 readingFromFakeStream = rospy.get_param("ping_driver/shouldEmulateData")
-
 currentCfg = dict()
 currentCfg['ping_enabled'] = rospy.get_param("ping_driver/ping_enabled")
 currentCfg['ping_frequency'] = rospy.get_param("ping_driver/ping_frequency")
@@ -34,6 +33,7 @@ currentCfg['auto'] = rospy.get_param("ping_driver/auto")
 currentCfg['scan_start'] = rospy.get_param("ping_driver/scan_start")
 currentCfg['scan_length'] = rospy.get_param("ping_driver/scan_length")
 currentCfg['gain'] = rospy.get_param("ping_driver/gain")
+port = rospy.get_param("ping_driver/dev")
 
 # Used to communicate across threads
 # # This is NOT thread safe, but doesn't need to be 
@@ -98,15 +98,6 @@ def reconfigure_cb(config, level):
     # Todo - Make sure this doesn't cause errors due to me running off of a custom dictionary here instead of using a variable instantiated directly from the config file 
     return currentCfg
 
-# Initializing Ping if we're not working with fake data 
-myPing = None # Avoids scope issues
-if not readingFromFakeStream:
-
-    # This specific serial port is usually correct but could theoretically need changed
-    myPing = Ping1D("/dev/ttyUSB0", 115200)
-    if myPing.initialize() is False:
-        rospy.logwarn("Failed to initialize Ping! This probably means that it couldn't find the correct serial port or something similar. Fatal error.")
-
 # Setting up the node and the publisher for the Ping's data with ROS
 rospy.init_node('ping_viewer')
 pub = rospy.Publisher('/ping/raw', pingMessage, queue_size=10)
@@ -114,46 +105,13 @@ pub = rospy.Publisher('/ping/raw', pingMessage, queue_size=10)
 # Ping is connected and readable, so we start the dynamic reconfig server 
 srv = Server(PingDriverConfig, reconfigure_cb)
 
-def initializePingDefaultValues():
+# Initializing Ping and error-checking 
+myPing = None # Delcared here to retain global scope 
+if not readingFromFakeStream:
 
-    if not myPing.set_ping_enabled(1):
-        rospy.logwarn("Was not able to enable ping.")
-    else: 
-        rospy.loginfo("Enabled ping successfully.")
-        
-    if not myPing.set_ping_interval(currentCfg['ping_interval']):
-        rospy.logwarn("Was not able to set the ping's sampling interval.")
-    else: 
-        rospy.loginfo("Set the ping's sampling interval successfully.")
-
-    if not myPing.set_speed_of_sound(currentCfg['speed_of_sound']):
-        rospy.logwarn("Was not able to set the ping's speed of sound.")
-    else: 
-        rospy.loginfo("Set the ping's speed of sound successfully.")
-
-    if not myPing.set_mode_auto(True):
-        rospy.logwarn("Was not able to set the Ping's sampling mode.")
-    else:
-        rospy.loginfo("Set the ping's sampling mode successfully.")
-
-    # Only try to set the below attributes if we're not on auto mode
-    if (currentCfg['auto'] == 0):
-
-        rospy.loginfo("Ping's mode was manual. Attempting to set range and gain index.")
-        
-        if not myPing.set_range( currentCfg['scan_start'] * 1000, currentCfg[scan_length] * 1000):
-            rospy.logwarn("Was not able to set the Ping's range.")
-        else:
-            rospy.loginfo("Set the ping's range successfully.")
-
-        if not myPing.set_gain_index(currentCfg['gain']):
-            rospy.logwarn("Was not able to set the Ping's gain index.")
-        else:
-            rospy.loginfo("Set the ping's gain index successfully.")
-
-    else: 
-
-        rospy.loginfo("DIdn't set ping range or gain index due to mode being in auto.")
+    myPing = Ping1D(port, 115200)
+    if not myPing.initialize():
+        rospy.logwarn("Failed to initialize Ping! This probably means that it couldn't find the correct serial port or something similar. Fatal error.")
 
 def outputStartupPingValues():
 
@@ -166,8 +124,7 @@ def outputStartupPingValues():
     rospy.loginfo("Gain Index: " + str(myPing.get_general_info()['gain_index']))
     rospy.loginfo("Operating Mode (0 = Manual, 1 = Auto): " + str(myPing.get_general_info()['mode_auto']))
 
-# TODO: Modify this function to get called regardless of overall operation mode (fake or real data) because that's much cleaner to look at and there's some redundant checks in here 
-def setupFakeData():
+def publishData():
 
     # Instance of the message so its values can be continually changed then published
     ping_msg = pingMessage()
@@ -189,26 +146,21 @@ def setupFakeData():
         listenerThread = threading.Thread(target=readFakeData, args=[master])
         listenerThread.start()
 
-    distanceData = None
+    distanceData = dict()
     while not rospy.is_shutdown():
 
         # If we're reading from the ping, get data from the actual library function 
-        if not readingFromFakeStream:
+        if readingFromFakeStream:
 
-            distanceData = Ping1D.get_distance_simple(myPing)
+            distanceData['distance'] = cachedFakeDistance / 1000
+            distanceData['confidence'] = cachedFakeConfidence            
         
         # Otherwise, set up distanceData's values as the last cached fake values from the stream
         else: 
 
-            distanceData = {
-                "distance": None, 
-                "confidence": None
-            }
+            distanceData = Ping1D.get_distance_simple(myPing)
 
-            distanceData['distance'] = cachedFakeDistance / 1000
-            distanceData['confidence'] = cachedFakeConfidence 
-
-        # If distance data this time around is valid 
+        # Basic error checking 
         if distanceData is not None:
 
             # Raw Data is in millimeters, data published to our topic should be in meters
@@ -277,13 +229,11 @@ def readFakeData(port):
 # Runs what's necessary contingent upon if we're reading fake data or not 
 if __name__ == "__main__":
 
-    if readingFromFakeStream:        
+    # Called regardless of if we're using ping or simulated data 
+    publishData()
 
-        setupFakeData()        
+    if not readingFromFakeStream:
 
-    else:
-
-        initializePingDefaultValues()
         outputStartupPingValues()
 
         
