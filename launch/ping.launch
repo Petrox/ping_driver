@@ -1,19 +1,19 @@
 <launch>
     
     <!-- Holds which port the robot is on -->
-    <arg name="dev" default="/dev/ttyUSB0" />
+    <arg name="dev" default="/dev/ping" />
 
     <!-- Ping startup values -->
     <arg name="ping_enabled" default="True" />
     <arg name="ping_frequency" default="10" />
-    <arg name="speed_of_sound" default="346" /> <!-- Speed of sound in air -->
+    <arg name="speed_of_sound" default="346" />
     <arg name="auto" default="True" />
     <arg name="scan_start" default="0" />
     <arg name="scan_length" default="10" />
     <arg name="gain" default="0" />
 
     <!-- Controls whether the class gets data from the ping or emulates it -->
-    <arg name="shouldEmulateData" default="True" />
+    <arg name="shouldEmulateData" default="False" />
 
     <node pkg="ping_driver" name="ping_driver" type="pingDriver.py">
 

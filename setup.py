@@ -9,7 +9,8 @@ from catkin_pkg.python_setup import generate_distutils_setup
 setup_args = generate_distutils_setup (
     packages=['ping_driver', 'ping_driver.cfg', 'ping_driver.msg', 'ping_driver.packages'],
     scripts=['scripts/pingDriver.py'],
-    package_dir={'': 'src'}
+    #packages=['ping_driver'],
+    package_dir={'': 'scripts'}
 )
 
 setup(**setup_args)

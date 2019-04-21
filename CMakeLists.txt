@@ -11,7 +11,7 @@ find_package(catkin REQUIRED
 )
 
 # Links the messages used by the node 
-add_message_files (FILES pingMessage.msg)
+add_message_files(DIRECTORY msg)
 
 # Sets up project imports using information from setup.py
 catkin_python_setup()
@@ -22,13 +22,16 @@ generate_messages()
 generate_dynamic_reconfigure_options(cfg/PingDriverConfig.cfg)
 
 # Must be run before catkin_install_python as it defines CATKIN_PACKAGE_BIN_DESTINATION
-catkin_package()
+catkin_package(CATKIN_DEPENDS message_runtime)
 
-catkin_install_python(programs scripts/pingDriver.py
+catkin_install_python(PROGRAMS scripts/pingDriver.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 # add_dependencies(ping_driver ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
 
 
 
