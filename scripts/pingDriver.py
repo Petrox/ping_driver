@@ -109,7 +109,8 @@ srv = Server(PingDriverConfig, reconfigure_cb)
 myPing = None # Delcared here to retain global scope 
 if not shouldEmulateData:
 
-    myPing = Ping1D(port, 115200)
+    myPing = Ping1D()
+    myPing.connect_serial(port, 115200)
     if not myPing.initialize():
         rospy.logwarn("Failed to initialize Ping! This probably means that it couldn't find the correct serial port or something similar. Fatal error.")
 
